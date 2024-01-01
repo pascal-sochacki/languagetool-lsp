@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/pascal-sochacki/languagetool-lsp/cmd/lt-lsp/server"
+	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
@@ -82,7 +83,7 @@ func main() {
 	log.Info("starting...")
 
 	stream := jsonrpc2.NewStream(stdReaderWriterCloser{log: log})
-	server, serverInit := server.NewServer(log)
+	server, serverInit := server.NewServer(log, *languagetool.NewClient())
 
 	_, conn, client := protocol.NewServer(ctx, server, stream, log)
 	defer conn.Close()

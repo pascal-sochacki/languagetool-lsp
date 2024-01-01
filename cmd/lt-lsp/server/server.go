@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	log    *zap.Logger
-	client protocol.Client
+	log          *zap.Logger
+	languagetool languagetool.Client
+	client       protocol.Client
 }
 
 // CodeAction implements protocol.Server.
@@ -60,19 +62,32 @@ func (Server) Definition(ctx context.Context, params *protocol.DefinitionParams)
 
 // DidChange implements protocol.Server.
 func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
-	s.log.Debug(fmt.Sprintf("%+v", params))
-	s.log.Debug(fmt.Sprintf("%+v", s.client))
-	s.client.PublishDiagnostics(ctx, &protocol.PublishDiagnosticsParams{
-		URI: params.TextDocument.URI,
-		Diagnostics: []protocol.Diagnostic{
-			{
-				Range: protocol.Range{
-					Start: protocol.Position{},
-					End:   protocol.Position{},
+	result, err := s.languagetool.CheckText(ctx, params.ContentChanges[0].Text, "auto")
+	if err != nil {
+		return err
+	}
+
+	diagnostics := []protocol.Diagnostic{}
+
+	for _, v := range result.Matches {
+		diagnostics = append(diagnostics, protocol.Diagnostic{
+			Message: v.Message,
+			Range: protocol.Range{
+				Start: protocol.Position{
+					Line:      0,
+					Character: uint32(v.Offset),
 				},
-				Message: "Das ist ein Test",
+				End: protocol.Position{
+					Line:      0,
+					Character: uint32(v.Offset) + uint32(v.Length),
+				},
 			},
-		},
+		})
+
+	}
+	s.client.PublishDiagnostics(ctx, &protocol.PublishDiagnosticsParams{
+		URI:         params.TextDocument.URI,
+		Diagnostics: diagnostics,
 	})
 	return nil
 }
@@ -199,7 +214,7 @@ func (s Server) Initialize(ctx context.Context, params *protocol.InitializeParam
 	result.ServerInfo.Version = "0.0.1"
 	result.Capabilities = protocol.ServerCapabilities{}
 	result.Capabilities.TextDocumentSync = 1
-	result.Capabilities.CodeActionProvider = protocol.CodeActionOptions{ResolveProvider: true}
+	result.Capabilities.CodeActionProvider = protocol.CodeActionOptions{ResolveProvider: true, CodeActionKinds: []protocol.CodeActionKind{protocol.QuickFix}}
 	return result, nil
 }
 
@@ -345,9 +360,10 @@ func (Server) WorkDoneProgressCancel(ctx context.Context, params *protocol.WorkD
 	return nil
 }
 
-func NewServer(log *zap.Logger) (*Server, func(protocol.Client)) {
+func NewServer(log *zap.Logger, languagetool languagetool.Client) (*Server, func(protocol.Client)) {
 	a := &Server{
-		log: log,
+		log:          log,
+		languagetool: languagetool,
 	}
 	b := func(client protocol.Client) {
 		a.client = client
