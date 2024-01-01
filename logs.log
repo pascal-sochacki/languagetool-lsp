@@ -1,0 +1,39 @@
+{"level":"info","ts":1704131295.698616,"caller":"lt-lsp/main.go:82","msg":"starting..."}
+{"level":"debug","ts":1704131295.699334,"caller":"server/server.go:191","msg":"called Initialize"}
+{"level":"debug","ts":1704131295.699593,"caller":"server/server.go:206","msg":"called Initialized"}
+{"level":"debug","ts":1704131295.699714,"caller":"server/server.go:113","msg":"\n"}
+{"level":"debug","ts":1704131298.4652789,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:3} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:a\n}]}"}
+{"level":"info","ts":1704131431.283875,"caller":"lt-lsp/main.go:82","msg":"starting..."}
+{"level":"debug","ts":1704131431.2847202,"caller":"server/server.go:192","msg":"called Initialize"}
+{"level":"debug","ts":1704131431.2850492,"caller":"server/server.go:207","msg":"called Initialized"}
+{"level":"debug","ts":1704131431.28514,"caller":"server/server.go:114","msg":"asasdd\n"}
+{"level":"debug","ts":1704131434.0002172,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:3} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:aasasdd\n}]}"}
+{"level":"debug","ts":1704131434.000344,"caller":"server/server.go:64","msg":"<nil>"}
+{"level":"info","ts":1704131514.03711,"caller":"lt-lsp/main.go:82","msg":"starting..."}
+{"level":"debug","ts":1704131514.038172,"caller":"server/server.go:192","msg":"called Initialize"}
+{"level":"debug","ts":1704131514.038914,"caller":"server/server.go:207","msg":"called Initialized"}
+{"level":"debug","ts":1704131514.039041,"caller":"server/server.go:114","msg":"asdasasdd\n"}
+{"level":"debug","ts":1704131516.0260549,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:3} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:aasdasasdd\n}]}"}
+{"level":"debug","ts":1704131516.026175,"caller":"server/server.go:64","msg":"&{Conn:0x14000196000 logger:0x1400018e060}"}
+{"level":"debug","ts":1704131516.026185,"logger":"client","caller":"protocol@v0.12.0/client.go:313","msg":"call textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131516.026287,"logger":"client","caller":"protocol@v0.12.0/client.go:316","msg":"end textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131516.177611,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:5} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:asdasdasasdd\n}]}"}
+{"level":"debug","ts":1704131516.177738,"caller":"server/server.go:64","msg":"&{Conn:0x14000196000 logger:0x1400018e060}"}
+{"level":"debug","ts":1704131516.1777549,"logger":"client","caller":"protocol@v0.12.0/client.go:313","msg":"call textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131516.177814,"logger":"client","caller":"protocol@v0.12.0/client.go:316","msg":"end textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131556.190014,"caller":"server/server.go:126","msg":"&{Text: TextDocument:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md}}"}
+{"level":"info","ts":1704131556.222538,"caller":"lt-lsp/main.go:96","msg":"conn closed"}
+{"level":"info","ts":1704131609.493792,"caller":"lt-lsp/main.go:82","msg":"starting..."}
+{"level":"debug","ts":1704131609.495127,"caller":"server/server.go:193","msg":"called Initialize"}
+{"level":"debug","ts":1704131609.495785,"caller":"server/server.go:208","msg":"called Initialized"}
+{"level":"debug","ts":1704131609.495924,"caller":"server/server.go:115","msg":"asdasdasasdd\n"}
+{"level":"debug","ts":1704131611.805048,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:3} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:aasdasdasasdd\n}]}"}
+{"level":"debug","ts":1704131611.8052218,"caller":"server/server.go:64","msg":"&{Conn:0x14000296000 logger:0x1400028e060}"}
+{"level":"debug","ts":1704131611.805245,"logger":"client","caller":"protocol@v0.12.0/client.go:313","msg":"call textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131611.805391,"logger":"client","caller":"protocol@v0.12.0/client.go:316","msg":"end textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131611.9592562,"caller":"server/server.go:63","msg":"&{TextDocument:{TextDocumentIdentifier:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md} Version:5} ContentChanges:[{Range:{Start:{Line:0 Character:0} End:{Line:0 Character:0}} RangeLength:0 Text:asdasdasdasasdd\n}]}"}
+{"level":"debug","ts":1704131611.959351,"caller":"server/server.go:64","msg":"&{Conn:0x14000296000 logger:0x1400028e060}"}
+{"level":"debug","ts":1704131611.959368,"logger":"client","caller":"protocol@v0.12.0/client.go:313","msg":"call textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131611.95942,"logger":"client","caller":"protocol@v0.12.0/client.go:316","msg":"end textDocument/publishDiagnostics"}
+{"level":"debug","ts":1704131630.190109,"caller":"server/server.go:127","msg":"&{Text: TextDocument:{URI:file:///Users/pascalsochacki/Projects/Private/languagetool-lsp/test.md}}"}
+{"level":"info","ts":1704131630.2230039,"caller":"lt-lsp/main.go:96","msg":"conn closed"}
