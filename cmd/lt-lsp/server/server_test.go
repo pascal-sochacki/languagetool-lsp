@@ -81,7 +81,8 @@ func (ClientRecorder) WorkspaceFolders(ctx context.Context) (result []protocol.W
 }
 
 type TestDidChangeTest struct {
-	text string
+	text   string
+	answer languagetool.CheckResult
 }
 
 func TestDidChange(t *testing.T) {
@@ -93,7 +94,16 @@ func TestDidChange(t *testing.T) {
 
 	tests := []TestDidChangeTest{
 		{
-			text: "hello world",
+			text: "Hey, do you have Dyslexia (like me) and need to write comments and readme's? \n\nIff so, you may enjoy this lsp.\n\nExample:\n\n![Example](assets/example.png \"Example of the usage\")\n\n",
+			answer: languagetool.CheckResult{
+				Matches: []languagetool.Match{
+					{
+						Message: "Possible spelling mistake found.",
+						Offset:  67,
+						Length:  6,
+					},
+				},
+			},
 		},
 	}
 

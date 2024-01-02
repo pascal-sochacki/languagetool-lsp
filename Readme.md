@@ -1,8 +1,8 @@
 Hey, do you have Dyslexia (like me) and need to write comments and readme's? 
 
-Iff so, you may enjoy this lsp.
+If so, you may enjoy this lsp.
 
-Example:
-
+EExaample:
+a 
 ![Example](assets/example.png "Example of the usage")
 

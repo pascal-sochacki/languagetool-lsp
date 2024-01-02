@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/protocol"
@@ -62,7 +63,8 @@ func (Server) Definition(ctx context.Context, params *protocol.DefinitionParams)
 
 // DidChange implements protocol.Server.
 func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
-	result, err := s.languagetool.CheckText(ctx, params.ContentChanges[0].Text, "auto")
+	text := params.ContentChanges[0].Text
+	result, err := s.languagetool.CheckText(ctx, text, "auto")
 	if err != nil {
 		s.log.Error(err.Error())
 		return err
@@ -71,18 +73,15 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 	s.log.Debug(fmt.Sprintf("%+v", result))
 	diagnostics := []protocol.Diagnostic{}
 
+	lines := strings.Split(text, "\n")
+
 	for _, v := range result.Matches {
+		start, end := findPositionAndLine(lines, v.Offset, v.Length)
 		diagnostics = append(diagnostics, protocol.Diagnostic{
 			Message: v.Message,
 			Range: protocol.Range{
-				Start: protocol.Position{
-					Line:      0,
-					Character: uint32(v.Offset),
-				},
-				End: protocol.Position{
-					Line:      0,
-					Character: uint32(v.Offset) + uint32(v.Length),
-				},
+				Start: start,
+				End:   end,
 			},
 		})
 	}
@@ -92,6 +91,33 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 		Diagnostics: diagnostics,
 	})
 	return nil
+}
+
+func findPositionAndLine(lines []string, offset int, length int) (start protocol.Position, end protocol.Position) {
+
+	var line uint32
+	line = 0
+
+	for {
+
+		if offset-len(lines[line]) < 0 {
+			break
+		}
+
+		offset = offset - len(lines[line])
+
+		if int(line) == len(lines)-1 {
+			break
+		}
+		line += 1
+		offset -= 1
+	}
+	start.Line = line
+	start.Character = uint32(offset)
+	end.Line = line
+	end.Character = uint32(offset) + uint32(length)
+	return start, end
+
 }
 
 // DidChangeConfiguration implements protocol.Server.
