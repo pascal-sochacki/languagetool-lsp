@@ -1,6 +1,6 @@
 Hey, do you have Dyslexia (like me) and need to write comments and readme's? 
 
-If so, you may enjoy this lsp.
+Iff so, you may enjoy this lsp.
 
 Example:
 

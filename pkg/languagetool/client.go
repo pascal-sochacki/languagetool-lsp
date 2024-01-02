@@ -11,6 +11,10 @@ import (
 	"strconv"
 )
 
+type LanguagetoolApi interface {
+	CheckText(ctx context.Context, text string, language string) (CheckResult, error)
+}
+
 type Client struct {
 	baseURL string
 	client  *http.Client
@@ -28,9 +32,17 @@ type CheckResult struct {
 }
 
 type Match struct {
-	Message string `json:"message"`
-	Offset  int    `json:"offset"`
-	Length  int    `json:"length"`
+	Message  string       `json:"message"`
+	Offset   int          `json:"offset"`
+	Length   int          `json:"length"`
+	Context  MatchContext `json:"context"`
+	Sentence string       `json:"sentence"`
+}
+
+type MatchContext struct {
+	Text   string `json:"text"`
+	Offset int    `json:"offset"`
+	Length int    `json:"length"`
 }
 
 func (c Client) CheckText(ctx context.Context, text string, language string) (CheckResult, error) {

@@ -11,7 +11,7 @@ import (
 
 type Server struct {
 	log          *zap.Logger
-	languagetool languagetool.Client
+	languagetool languagetool.LanguagetoolApi
 	client       protocol.Client
 }
 
@@ -64,9 +64,11 @@ func (Server) Definition(ctx context.Context, params *protocol.DefinitionParams)
 func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
 	result, err := s.languagetool.CheckText(ctx, params.ContentChanges[0].Text, "auto")
 	if err != nil {
+		s.log.Error(err.Error())
 		return err
 	}
 
+	s.log.Debug(fmt.Sprintf("%+v", result))
 	diagnostics := []protocol.Diagnostic{}
 
 	for _, v := range result.Matches {
@@ -83,8 +85,8 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 				},
 			},
 		})
-
 	}
+	s.log.Debug(fmt.Sprintf("%+v", diagnostics))
 	s.client.PublishDiagnostics(ctx, &protocol.PublishDiagnosticsParams{
 		URI:         params.TextDocument.URI,
 		Diagnostics: diagnostics,
@@ -360,7 +362,7 @@ func (Server) WorkDoneProgressCancel(ctx context.Context, params *protocol.WorkD
 	return nil
 }
 
-func NewServer(log *zap.Logger, languagetool languagetool.Client) (*Server, func(protocol.Client)) {
+func NewServer(log *zap.Logger, languagetool languagetool.LanguagetoolApi) (*Server, func(protocol.Client)) {
 	a := &Server{
 		log:          log,
 		languagetool: languagetool,
