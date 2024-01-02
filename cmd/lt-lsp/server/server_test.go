@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
@@ -10,14 +11,19 @@ import (
 )
 
 type MockServer struct {
+	result *languagetool.CheckResult
 }
 
-// CheckText implements languagetool.LanguagetoolApi.
-func (MockServer) CheckText(ctx context.Context, text string, language string) (languagetool.CheckResult, error) {
-	return languagetool.CheckResult{}, nil
+func (m *MockServer) CheckText(ctx context.Context, text string, language string) (languagetool.CheckResult, error) {
+	return *m.result, nil
+}
+
+func (m *MockServer) setCheckResult(result languagetool.CheckResult) {
+	m.result = &result
 }
 
 type ClientRecorder struct {
+	Diagostics []protocol.PublishDiagnosticsParams
 }
 
 // ApplyEdit implements protocol.Client.
@@ -41,8 +47,14 @@ func (ClientRecorder) Progress(ctx context.Context, params *protocol.ProgressPar
 }
 
 // PublishDiagnostics implements protocol.Client.
-func (ClientRecorder) PublishDiagnostics(ctx context.Context, params *protocol.PublishDiagnosticsParams) (err error) {
+func (c *ClientRecorder) PublishDiagnostics(ctx context.Context, params *protocol.PublishDiagnosticsParams) (err error) {
+	fmt.Printf("%+v", *params)
+	c.Diagostics = append(c.Diagostics, *params)
 	return nil
+}
+
+func (c ClientRecorder) getDiagostics() []protocol.PublishDiagnosticsParams {
+	return c.Diagostics
 }
 
 // RegisterCapability implements protocol.Client.
@@ -83,24 +95,29 @@ func (ClientRecorder) WorkspaceFolders(ctx context.Context) (result []protocol.W
 type TestDidChangeTest struct {
 	text   string
 	answer languagetool.CheckResult
+	expect []protocol.Diagnostic
 }
 
 func TestDidChange(t *testing.T) {
 
-	mock := MockServer{}
-	recorder := ClientRecorder{}
-	server, init := NewServer(zap.NewNop(), mock)
-	init(recorder)
-
 	tests := []TestDidChangeTest{
 		{
-			text: "Hey, do you have Dyslexia (like me) and need to write comments and readme's? \n\nIff so, you may enjoy this lsp.\n\nExample:\n\n![Example](assets/example.png \"Example of the usage\")\n\n",
+			text: "Apffelstaft\n",
 			answer: languagetool.CheckResult{
 				Matches: []languagetool.Match{
 					{
-						Message: "Possible spelling mistake found.",
-						Offset:  67,
-						Length:  6,
+						Message: "Möglicher Tippfehler gefunden.",
+						Offset:  0,
+						Length:  10,
+					},
+				},
+			},
+			expect: []protocol.Diagnostic{
+				{
+					Message: "Möglicher Tippfehler gefunden.",
+					Range: protocol.Range{
+						Start: protocol.Position{Character: 0},
+						End:   protocol.Position{Character: 10},
 					},
 				},
 			},
@@ -108,7 +125,11 @@ func TestDidChange(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		mock := &MockServer{}
 
+		recorder := &ClientRecorder{}
+		server, init := NewServer(zap.NewNop(), mock)
+		init(recorder)
 		params := protocol.DidChangeTextDocumentParams{}
 		params.ContentChanges = []protocol.TextDocumentContentChangeEvent{
 			{
@@ -116,7 +137,13 @@ func TestDidChange(t *testing.T) {
 				Text: test.text,
 			},
 		}
+		fmt.Printf("%+v", test.answer)
 
+		mock.setCheckResult(test.answer)
 		server.DidChange(context.Background(), &params)
+
+		if len(recorder.getDiagostics()) != len(test.expect) {
+			t.Fatalf("wrong length of diagostics want: %d, got: %d", len(test.expect), len(recorder.getDiagostics()))
+		}
 	}
 }

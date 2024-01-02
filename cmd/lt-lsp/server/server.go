@@ -64,12 +64,14 @@ func (Server) Definition(ctx context.Context, params *protocol.DefinitionParams)
 // DidChange implements protocol.Server.
 func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
 	text := params.ContentChanges[0].Text
+
 	result, err := s.languagetool.CheckText(ctx, text, "auto")
 	if err != nil {
 		s.log.Error(err.Error())
 		return err
 	}
 
+	fmt.Printf("%+v", result)
 	s.log.Debug(fmt.Sprintf("%+v", result))
 	diagnostics := []protocol.Diagnostic{}
 
