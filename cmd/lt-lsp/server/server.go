@@ -17,8 +17,9 @@ type Server struct {
 }
 
 // CodeAction implements protocol.Server.
-func (Server) CodeAction(ctx context.Context, params *protocol.CodeActionParams) (result []protocol.CodeAction, err error) {
-	return []protocol.CodeAction{}, nil
+func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParams) (result []protocol.CodeAction, err error) {
+	s.log.Debug(fmt.Sprintf("%+v", params))
+	return []protocol.CodeAction{{Title: "Fix this"}}, nil
 }
 
 // CodeLens implements protocol.Server.
@@ -96,7 +97,6 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 }
 
 func findPositionAndLine(lines []string, offset int, length int) (start protocol.Position, end protocol.Position) {
-
 	var line uint32
 	line = 0
 
@@ -119,7 +119,6 @@ func findPositionAndLine(lines []string, offset int, length int) (start protocol
 	end.Line = line
 	end.Character = uint32(offset) + uint32(length)
 	return start, end
-
 }
 
 // DidChangeConfiguration implements protocol.Server.
@@ -244,7 +243,7 @@ func (s Server) Initialize(ctx context.Context, params *protocol.InitializeParam
 	result.ServerInfo.Version = "0.0.1"
 	result.Capabilities = protocol.ServerCapabilities{}
 	result.Capabilities.TextDocumentSync = 1
-	result.Capabilities.CodeActionProvider = protocol.CodeActionOptions{ResolveProvider: true, CodeActionKinds: []protocol.CodeActionKind{protocol.QuickFix}}
+	result.Capabilities.CodeActionProvider = true
 	return result, nil
 }
 

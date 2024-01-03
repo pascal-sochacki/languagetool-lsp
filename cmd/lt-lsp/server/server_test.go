@@ -122,6 +122,27 @@ func TestDidChange(t *testing.T) {
 				},
 			},
 		},
+		{
+			text: "\nApffelstaft",
+			answer: languagetool.CheckResult{
+				Matches: []languagetool.Match{
+					{
+						Message: "Möglicher Tippfehler gefunden.",
+						Offset:  0,
+						Length:  10,
+					},
+				},
+			},
+			expect: []protocol.Diagnostic{
+				{
+					Message: "Möglicher Tippfehler gefunden.",
+					Range: protocol.Range{
+						Start: protocol.Position{Character: 0, Line: 1},
+						End:   protocol.Position{Character: 10, Line: 1},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
