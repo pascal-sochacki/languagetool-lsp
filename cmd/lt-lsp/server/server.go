@@ -19,7 +19,17 @@ type Server struct {
 // CodeAction implements protocol.Server.
 func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParams) (result []protocol.CodeAction, err error) {
 	s.log.Debug(fmt.Sprintf("%+v", params))
-	return []protocol.CodeAction{{Title: "Fix this"}}, nil
+
+	return []protocol.CodeAction{{Title: "Fix this", Edit: &protocol.WorkspaceEdit{
+		Changes: map[protocol.DocumentURI][]protocol.TextEdit{
+			params.TextDocument.URI: {
+				{
+					Range:   protocol.Range{Start: protocol.Position{}, End: protocol.Position{Character: 10}},
+					NewText: "Did by CodeAction",
+				},
+			},
+		},
+	}}}, nil
 }
 
 // CodeLens implements protocol.Server.
@@ -198,7 +208,8 @@ func (Server) DocumentSymbol(ctx context.Context, params *protocol.DocumentSymbo
 }
 
 // ExecuteCommand implements protocol.Server.
-func (Server) ExecuteCommand(ctx context.Context, params *protocol.ExecuteCommandParams) (result interface{}, err error) {
+func (s Server) ExecuteCommand(ctx context.Context, params *protocol.ExecuteCommandParams) (result interface{}, err error) {
+	s.log.Debug(fmt.Sprintf("%+v", params))
 	return nil, nil
 }
 
