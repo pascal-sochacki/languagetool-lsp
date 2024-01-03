@@ -20,6 +20,10 @@ type Server struct {
 func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParams) (result []protocol.CodeAction, err error) {
 	s.log.Debug(fmt.Sprintf("%+v", params))
 
+	if len(params.Context.Diagnostics) == 0 {
+		return []protocol.CodeAction{}, nil
+	}
+
 	return []protocol.CodeAction{{Title: "Fix this", Edit: &protocol.WorkspaceEdit{
 		Changes: map[protocol.DocumentURI][]protocol.TextEdit{
 			params.TextDocument.URI: {
@@ -90,8 +94,15 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 
 	for _, v := range result.Matches {
 		start, end := findPositionAndLine(lines, v.Offset, v.Length)
+
+		replacements := []string{}
+		for _, v := range v.Replacements {
+			replacements = append(replacements, v.Value)
+
+		}
+
 		diagnostics = append(diagnostics, protocol.Diagnostic{
-			Message: v.Message,
+			Message: fmt.Sprintf("%s (%s)", v.Message, strings.Join(replacements, ", ")),
 			Range: protocol.Range{
 				Start: start,
 				End:   end,

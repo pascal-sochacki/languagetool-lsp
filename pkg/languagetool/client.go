@@ -32,11 +32,16 @@ type CheckResult struct {
 }
 
 type Match struct {
-	Message  string       `json:"message"`
-	Offset   int          `json:"offset"`
-	Length   int          `json:"length"`
-	Context  MatchContext `json:"context"`
-	Sentence string       `json:"sentence"`
+	Message      string        `json:"message"`
+	Offset       int           `json:"offset"`
+	Length       int           `json:"length"`
+	Context      MatchContext  `json:"context"`
+	Sentence     string        `json:"sentence"`
+	Replacements []Replacement `json:"replacements"`
+}
+
+type Replacement struct {
+	Value string `json:"value"`
 }
 
 type MatchContext struct {

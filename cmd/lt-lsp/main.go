@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/pascal-sochacki/languagetool-lsp/cmd/lt-lsp/server"
+	"github.com/pascal-sochacki/languagetool-lsp/internal/server"
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
