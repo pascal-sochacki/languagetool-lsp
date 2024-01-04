@@ -18,7 +18,7 @@ func NewLogger() (*zap.Logger, error) {
 		"./logs.log",
 	}
 	cfg.Level = zap.NewAtomicLevel()
-	cfg.Level.SetLevel(zap.DebugLevel)
+	cfg.Level.SetLevel(zap.InfoLevel)
 	return cfg.Build()
 }
 

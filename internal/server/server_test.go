@@ -99,7 +99,6 @@ type TestDidChangeTest struct {
 }
 
 func TestDidChange(t *testing.T) {
-
 	tests := []TestDidChangeTest{
 		{
 			text: "Apffelstaft\n",
@@ -166,5 +165,58 @@ func TestDidChange(t *testing.T) {
 		if len(recorder.getDiagostics()) != len(test.expect) {
 			t.Fatalf("wrong length of diagostics want: %d, got: %d", len(test.expect), len(recorder.getDiagostics()))
 		}
+	}
+}
+
+type TestCodeActionTest struct {
+	text   string
+	answer languagetool.CheckResult
+}
+
+func TestCodeAction(t *testing.T) {
+
+	tests := []TestCodeActionTest{
+		{
+			text: "Das ist ein Text mit Fehlern",
+			answer: languagetool.CheckResult{
+				Matches: []languagetool.Match{
+					{
+						Message: "Der die das",
+						Offset:  0,
+						Length:  3,
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		mock := &MockServer{}
+
+		recorder := &ClientRecorder{}
+		server, init := NewServer(zap.NewNop(), mock)
+		init(recorder)
+		params := protocol.DidChangeTextDocumentParams{}
+		params.ContentChanges = []protocol.TextDocumentContentChangeEvent{
+			{
+
+				Text: test.text,
+			},
+		}
+		fmt.Printf("%+v", test.answer)
+
+		mock.setCheckResult(test.answer)
+		server.DidChange(context.Background(), &params)
+		actions, _ := server.CodeAction(context.Background(), &protocol.CodeActionParams{
+			Range: protocol.Range{
+				Start: protocol.Position{},
+				End:   protocol.Position{Character: 3},
+			},
+		})
+
+		if 1 != len(actions) {
+			t.Fatalf("wrong length of actions want: %d, got: %d", 1, len(recorder.getDiagostics()))
+		}
+
 	}
 }

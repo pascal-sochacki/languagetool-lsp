@@ -18,22 +18,53 @@ type Server struct {
 
 // CodeAction implements protocol.Server.
 func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParams) (result []protocol.CodeAction, err error) {
-	s.log.Debug(fmt.Sprintf("%+v", params))
+	s.log.Info(fmt.Sprintf("%+v", params))
 
-	if len(params.Context.Diagnostics) == 0 {
-		return []protocol.CodeAction{}, nil
+	for _, v := range params.Context.Diagnostics {
+
+		if v.Range.Start.Line != params.Range.Start.Line {
+			continue
+		}
+
+		if params.Range.Start.Character < v.Range.Start.Character {
+			continue
+		}
+
+		if params.Range.End.Character > v.Range.End.Character {
+			continue
+		}
+
+		replacements, ok := v.Data.(map[string]interface{})
+
+		for k, v := range replacements {
+
+			s.log.Info(fmt.Sprintf("%T", k))
+			s.log.Info(fmt.Sprintf("%+v", k))
+
+			s.log.Info(fmt.Sprintf("%T", v))
+			s.log.Info(fmt.Sprintf("%+v", v))
+			replacement, _ := v.([]interface{})
+
+			for _, k := range replacement {
+				string := k.(string)
+
+				s.log.Info(fmt.Sprintf("%T", k))
+				s.log.Info(fmt.Sprintf("%+v", k))
+
+				result = append(result, protocol.CodeAction{
+					Title: "replace with " + string,
+				})
+
+			}
+
+		}
+
+		if !ok {
+			continue
+		}
+
 	}
-
-	return []protocol.CodeAction{{Title: "Fix this", Edit: &protocol.WorkspaceEdit{
-		Changes: map[protocol.DocumentURI][]protocol.TextEdit{
-			params.TextDocument.URI: {
-				{
-					Range:   protocol.Range{Start: protocol.Position{}, End: protocol.Position{Character: 10}},
-					NewText: "Did by CodeAction",
-				},
-			},
-		},
-	}}}, nil
+	return result, nil
 }
 
 // CodeLens implements protocol.Server.
@@ -76,8 +107,12 @@ func (Server) Definition(ctx context.Context, params *protocol.DefinitionParams)
 	return nil, nil
 }
 
+type Data struct {
+	Replacement []string `json:"replacement"`
+}
+
 // DidChange implements protocol.Server.
-func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
+func (s *Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
 	text := params.ContentChanges[0].Text
 
 	result, err := s.languagetool.CheckText(ctx, text, "auto")
@@ -101,13 +136,15 @@ func (s Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDoc
 
 		}
 
-		diagnostics = append(diagnostics, protocol.Diagnostic{
+		diagnostic := protocol.Diagnostic{
 			Message: fmt.Sprintf("%s (%s)", v.Message, strings.Join(replacements, ", ")),
+			Data:    Data{Replacement: replacements},
 			Range: protocol.Range{
 				Start: start,
 				End:   end,
-			},
-		})
+			}}
+
+		diagnostics = append(diagnostics, diagnostic)
 	}
 	s.log.Debug(fmt.Sprintf("%+v", diagnostics))
 	s.client.PublishDiagnostics(ctx, &protocol.PublishDiagnosticsParams{
