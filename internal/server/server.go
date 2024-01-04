@@ -36,27 +36,17 @@ func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParam
 
 		replacements, ok := v.Data.(map[string]interface{})
 
-		for k, v := range replacements {
+		for _, v := range replacements {
 
-			s.log.Info(fmt.Sprintf("%T", k))
-			s.log.Info(fmt.Sprintf("%+v", k))
-
-			s.log.Info(fmt.Sprintf("%T", v))
-			s.log.Info(fmt.Sprintf("%+v", v))
 			replacement, _ := v.([]interface{})
 
 			for _, k := range replacement {
 				string := k.(string)
 
-				s.log.Info(fmt.Sprintf("%T", k))
-				s.log.Info(fmt.Sprintf("%+v", k))
-
 				result = append(result, protocol.CodeAction{
 					Title: "replace with " + string,
 				})
-
 			}
-
 		}
 
 		if !ok {

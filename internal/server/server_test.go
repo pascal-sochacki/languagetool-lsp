@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
@@ -169,24 +170,27 @@ func TestDidChange(t *testing.T) {
 }
 
 type TestCodeActionTest struct {
-	text   string
-	answer languagetool.CheckResult
+	Diagnostic []protocol.Diagnostic
+	Range      protocol.Range
+	Result     []protocol.CodeAction
 }
 
 func TestCodeAction(t *testing.T) {
 
 	tests := []TestCodeActionTest{
 		{
-			text: "Das ist ein Text mit Fehlern",
-			answer: languagetool.CheckResult{
-				Matches: []languagetool.Match{
-					{
-						Message: "Der die das",
-						Offset:  0,
-						Length:  3,
-					},
+			Diagnostic: []protocol.Diagnostic{},
+			Range:      protocol.Range{},
+		},
+		{
+			Diagnostic: []protocol.Diagnostic{
+				{
+					Range: protocol.Range{},
+					Data:  map[string]interface{}{"replacements": []interface{}{"newString"}},
 				},
 			},
+			Range:  protocol.Range{},
+			Result: []protocol.CodeAction{{Title: "replace with newString"}},
 		},
 	}
 
@@ -196,26 +200,20 @@ func TestCodeAction(t *testing.T) {
 		recorder := &ClientRecorder{}
 		server, init := NewServer(zap.NewNop(), mock)
 		init(recorder)
-		params := protocol.DidChangeTextDocumentParams{}
-		params.ContentChanges = []protocol.TextDocumentContentChangeEvent{
-			{
 
-				Text: test.text,
-			},
-		}
-		fmt.Printf("%+v", test.answer)
-
-		mock.setCheckResult(test.answer)
-		server.DidChange(context.Background(), &params)
 		actions, _ := server.CodeAction(context.Background(), &protocol.CodeActionParams{
-			Range: protocol.Range{
-				Start: protocol.Position{},
-				End:   protocol.Position{Character: 3},
+			Context: protocol.CodeActionContext{
+				Diagnostics: test.Diagnostic,
 			},
+			Range: test.Range,
 		})
 
-		if 1 != len(actions) {
-			t.Fatalf("wrong length of actions want: %d, got: %d", 1, len(recorder.getDiagostics()))
+		if len(test.Result) != len(actions) {
+			t.Fatalf("wrong length of actions want: %d, got: %d", len(test.Result), len(actions))
+		}
+
+		if !reflect.DeepEqual(actions, test.Result) {
+			t.Fatalf("wrong items of actions want: %+v, got: %+v", test.Result, actions)
 		}
 
 	}
