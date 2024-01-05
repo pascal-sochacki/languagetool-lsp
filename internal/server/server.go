@@ -7,6 +7,7 @@ import (
 
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/protocol"
+	"go.lsp.dev/uri"
 	"go.uber.org/zap"
 )
 
@@ -34,17 +35,27 @@ func (s Server) CodeAction(ctx context.Context, params *protocol.CodeActionParam
 			continue
 		}
 
-		replacements, ok := v.Data.(map[string]interface{})
+		entries, ok := v.Data.(map[string]interface{})
 
-		for _, v := range replacements {
+		for _, replacements := range entries {
 
-			replacement, _ := v.([]interface{})
+			replacements, _ := replacements.([]interface{})
 
-			for _, k := range replacement {
-				string := k.(string)
+			for _, replacement := range replacements {
+				string := replacement.(string)
 
 				result = append(result, protocol.CodeAction{
 					Title: "replace with " + string,
+					Edit: &protocol.WorkspaceEdit{
+						Changes: map[uri.URI][]protocol.TextEdit{
+							params.TextDocument.URI: {
+								{
+									Range:   v.Range,
+									NewText: string,
+								},
+							},
+						},
+					},
 				})
 			}
 		}

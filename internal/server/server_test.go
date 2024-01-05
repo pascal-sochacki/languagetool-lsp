@@ -8,6 +8,7 @@ import (
 
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"go.lsp.dev/protocol"
+	"go.lsp.dev/uri"
 	"go.uber.org/zap"
 )
 
@@ -170,9 +171,10 @@ func TestDidChange(t *testing.T) {
 }
 
 type TestCodeActionTest struct {
-	Diagnostic []protocol.Diagnostic
-	Range      protocol.Range
-	Result     []protocol.CodeAction
+	Diagnostic   []protocol.Diagnostic
+	TextDocument protocol.TextDocumentIdentifier
+	Range        protocol.Range
+	Result       []protocol.CodeAction
 }
 
 func TestCodeAction(t *testing.T) {
@@ -185,12 +187,20 @@ func TestCodeAction(t *testing.T) {
 		{
 			Diagnostic: []protocol.Diagnostic{
 				{
-					Range: protocol.Range{},
+					Range: protocol.Range{Start: protocol.Position{Character: 0}, End: protocol.Position{Character: 10}},
 					Data:  map[string]interface{}{"replacements": []interface{}{"newString"}},
 				},
 			},
-			Range:  protocol.Range{},
-			Result: []protocol.CodeAction{{Title: "replace with newString"}},
+			TextDocument: protocol.TextDocumentIdentifier{URI: "test"},
+			Range:        protocol.Range{},
+			Result: []protocol.CodeAction{{Title: "replace with newString", Edit: &protocol.WorkspaceEdit{
+				Changes: map[uri.URI][]protocol.TextEdit{
+					"test": {{
+						NewText: "newString",
+						Range:   protocol.Range{Start: protocol.Position{Character: 0}, End: protocol.Position{Character: 10}},
+					}},
+				},
+			}}},
 		},
 	}
 
@@ -205,7 +215,8 @@ func TestCodeAction(t *testing.T) {
 			Context: protocol.CodeActionContext{
 				Diagnostics: test.Diagnostic,
 			},
-			Range: test.Range,
+			TextDocument: test.TextDocument,
+			Range:        test.Range,
 		})
 
 		if len(test.Result) != len(actions) {
