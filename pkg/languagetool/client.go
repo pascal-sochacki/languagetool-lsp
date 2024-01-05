@@ -3,12 +3,15 @@ package languagetool
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 type LanguagetoolApi interface {
@@ -16,14 +19,16 @@ type LanguagetoolApi interface {
 }
 
 type Client struct {
+	log     *zap.Logger
 	baseURL string
 	client  *http.Client
 }
 
-func NewClient() *Client {
+func NewClient(logger *zap.Logger) *Client {
 	return &Client{
 		baseURL: "https://api.languagetoolplus.com/v2/",
 		client:  &http.Client{},
+		log:     logger,
 	}
 }
 
@@ -51,12 +56,16 @@ type MatchContext struct {
 }
 
 func (c Client) CheckText(ctx context.Context, text string, language string) (CheckResult, error) {
+	c.log.Debug(text)
+	c.log.Debug(fmt.Sprintf("%d", len(text)))
 
 	result := CheckResult{}
 	fullUrl := c.baseURL + "check"
 
 	formData := url.Values{
 		"text":        {text},
+		"username":    {""},
+		"apiKey":      {""},
 		"language":    {"auto"},
 		"enabledOnly": {strconv.FormatBool(false)},
 	}
@@ -64,6 +73,7 @@ func (c Client) CheckText(ctx context.Context, text string, language string) (Ch
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fullUrl, strings.NewReader(formData.Encode()))
 
 	if err != nil {
+		c.log.Error(err.Error())
 		return result, err
 	}
 
@@ -71,12 +81,15 @@ func (c Client) CheckText(ctx context.Context, text string, language string) (Ch
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.client.Do(req)
+	c.log.Debug(resp.Status)
 	if err != nil {
+		c.log.Error(err.Error())
 		return result, err
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		c.log.Error(err.Error())
 		return result, err
 	}
 	err = json.Unmarshal(body, &result)

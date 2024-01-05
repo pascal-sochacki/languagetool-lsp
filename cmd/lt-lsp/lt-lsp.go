@@ -18,7 +18,7 @@ func NewLogger() (*zap.Logger, error) {
 		"./logs.log",
 	}
 	cfg.Level = zap.NewAtomicLevel()
-	cfg.Level.SetLevel(zap.InfoLevel)
+	cfg.Level.SetLevel(zap.DebugLevel)
 	return cfg.Build()
 }
 
@@ -83,7 +83,7 @@ func main() {
 	log.Info("starting...")
 
 	stream := jsonrpc2.NewStream(stdReaderWriterCloser{log: log})
-	server, serverInit := server.NewServer(log, *languagetool.NewClient())
+	server, serverInit := server.NewServer(log, *languagetool.NewClient(log))
 
 	_, conn, client := protocol.NewServer(ctx, server, stream, log)
 	defer conn.Close()
