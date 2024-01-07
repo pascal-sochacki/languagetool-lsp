@@ -16,7 +16,7 @@ type MockServer struct {
 	result *languagetool.CheckResult
 }
 
-func (m *MockServer) CheckText(ctx context.Context, text string, language string) (languagetool.CheckResult, error) {
+func (m *MockServer) CheckText(ctx context.Context, text string) (languagetool.CheckResult, error) {
 	return *m.result, nil
 }
 
