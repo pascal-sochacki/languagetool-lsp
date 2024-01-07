@@ -15,25 +15,46 @@ import (
 )
 
 type LanguagetoolApi interface {
-	CheckText(ctx context.Context, text string, language string) (CheckResult, error)
+	CheckText(ctx context.Context, text string) (CheckResult, error)
+}
+
+type Credentials struct {
+	Username string
+	ApiToken string
 }
 
 type Client struct {
-	log     *zap.Logger
-	baseURL string
-	client  *http.Client
+	log         *zap.Logger
+	baseURL     string
+	client      *http.Client
+	credentials Credentials
 }
 
 func NewClient(logger *zap.Logger) *Client {
 	return &Client{
-		baseURL: "https://api.languagetoolplus.com/v2/",
-		client:  &http.Client{},
-		log:     logger,
+		baseURL:     "https://api.languagetoolplus.com/v2/",
+		client:      &http.Client{},
+		log:         logger,
+		credentials: Credentials{},
+	}
+}
+
+func (c Client) WithClient(credentials Credentials) *Client {
+	return &Client{
+		baseURL:     c.baseURL,
+		client:      c.client,
+		log:         c.log,
+		credentials: credentials,
 	}
 }
 
 type CheckResult struct {
-	Matches []Match `json:"matches"`
+	Software Software `json:"software"`
+	Matches  []Match  `json:"matches"`
+}
+
+type Software struct {
+	Premium bool `json:"premium"`
 }
 
 type Match struct {
@@ -55,7 +76,7 @@ type MatchContext struct {
 	Length int    `json:"length"`
 }
 
-func (c Client) CheckText(ctx context.Context, text string, language string) (CheckResult, error) {
+func (c Client) CheckText(ctx context.Context, text string) (CheckResult, error) {
 	c.log.Debug(text)
 	c.log.Debug(fmt.Sprintf("%d", len(text)))
 
@@ -64,8 +85,8 @@ func (c Client) CheckText(ctx context.Context, text string, language string) (Ch
 
 	formData := url.Values{
 		"text":        {text},
-		"username":    {""},
-		"apiKey":      {""},
+		"username":    {c.credentials.Username},
+		"apiKey":      {c.credentials.ApiToken},
 		"language":    {"auto"},
 		"enabledOnly": {strconv.FormatBool(false)},
 	}

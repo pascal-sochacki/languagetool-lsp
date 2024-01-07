@@ -116,7 +116,7 @@ type Data struct {
 func (s *Server) DidChange(ctx context.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
 	text := params.ContentChanges[0].Text
 
-	result, err := s.languagetool.CheckText(ctx, text, "auto")
+	result, err := s.languagetool.CheckText(ctx, text)
 	if err != nil {
 		s.log.Error(err.Error())
 		return err
