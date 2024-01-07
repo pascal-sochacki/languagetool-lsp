@@ -9,6 +9,7 @@ import (
 	"github.com/pascal-sochacki/languagetool-lsp/internal/server"
 	"github.com/pascal-sochacki/languagetool-lsp/pkg/languagetool"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
@@ -22,6 +23,7 @@ var LSPRun = &cobra.Command{
 	Use:   "run",
 	Short: "start the lsp",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		log, err := NewLogger()
 		if err != nil {
 			os.Exit(1)
@@ -57,8 +59,14 @@ var LSPRun = &cobra.Command{
 		}()
 		log.Info("starting...")
 
+		languagetoolClient := *languagetool.NewClient(log)
+		languagetoolClient = *languagetoolClient.WithCredentials(languagetool.Credentials{
+			Username: viper.GetString("username"),
+			ApiToken: viper.GetString("apitoken"),
+		})
+
 		stream := jsonrpc2.NewStream(internal.StdReaderWriterCloser{Log: log})
-		server, serverInit := server.NewServer(log, *languagetool.NewClient(log))
+		server, serverInit := server.NewServer(log, languagetoolClient)
 
 		_, conn, client := protocol.NewServer(ctx, server, stream, log)
 		defer conn.Close()

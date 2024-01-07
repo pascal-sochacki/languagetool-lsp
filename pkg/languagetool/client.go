@@ -39,7 +39,7 @@ func NewClient(logger *zap.Logger) *Client {
 	}
 }
 
-func (c Client) WithClient(credentials Credentials) *Client {
+func (c Client) WithCredentials(credentials Credentials) *Client {
 	return &Client{
 		baseURL:     c.baseURL,
 		client:      c.client,

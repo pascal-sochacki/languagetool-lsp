@@ -22,7 +22,7 @@ var Configure = &cobra.Command{
 			return err
 		}
 		client := languagetool.NewClient(zap.NewNop())
-		client = client.WithClient(languagetool.Credentials{
+		client = client.WithCredentials(languagetool.Credentials{
 			Username: args[0],
 			ApiToken: args[1],
 		})

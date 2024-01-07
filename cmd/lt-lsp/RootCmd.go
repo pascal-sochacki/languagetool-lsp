@@ -14,8 +14,7 @@ var cfgFile string
 func init() {
 	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.lt-lsp)")
-	viper.BindPFlag("author", RootCmd.PersistentFlags().Lookup("username"))
-
+	viper.BindPFlag("uername", RootCmd.PersistentFlags().Lookup("username"))
 }
 
 func initConfig() {
